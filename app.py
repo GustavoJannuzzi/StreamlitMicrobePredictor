@@ -1,23 +1,58 @@
+#  STREAMLIT DEPLOY
+#  --- --- --- ---
+#  Machine Learning Microbe Prediction:
 
 #import libs
 import streamlit as st
 import pandas as pd
 import joblib
+import numpy as np
+import seaborn as sns
 
-"""
-STREAMLIT DEPLOY
---- --- --- ---
-Machine Learning Microbe Prediction:
-"""
 # ______________________
 #    DECISION TREE 
 #------------------------
 
+microbes_data = 'https://raw.githubusercontent.com/GustavoJannuzzi/StreamlitMicrobePredictor/main/microbes.csv'
+base_microbes = pd.read_csv(microbes_data)
+base_microbes.drop("Unnamed: 0",axis=1, inplace=True)
 
+
+# Divisão Previsores e Classe
+# X - Previsores
+x_microbes = base_microbes.iloc[:, 1:23].values
+
+# Y - Classe
+y_microbes = base_microbes.iloc[:, 24].values
+
+
+#Split the data in for test and training 
+from sklearn.model_selection import train_test_split
+x_microbes_train, x_microbes_test, y_microbes_train, y_microbes_test = train_test_split(x_microbes, y_microbes, test_size = 0.25, random_state = 0)
+
+# Save the data bases
+import pickle
+with open ('microbes.pkl', mode = 'wb') as f:
+    pickle.dump([x_microbes_train, y_microbes_train, x_microbes_test, y_microbes_test],f)
+
+# Creating the model
+from sklearn.tree import DecisionTreeClassifier
+import pickle
+with open('microbes.pkl','rb') as f:
+  x_microbes_train, y_microbes_train, x_microbes_test, y_microbes_test = pickle.load(f)
+
+arvore_microbes = DecisionTreeClassifier(criterion = 'entropy', random_state = 0)
+arvore_microbes.fit(x_microbes_train, y_microbes_train)
+
+### Create a Pickle file 
+import pickle
+pickle_out = open("microbes.pkl","wb")
+pickle.dump(arvore_microbes, pickle_out)
+pickle_out.close()
 
 # ______________________
 #       STREAMLIT 
-#------------------------
+# ------------------------
 # Input bar 
 col1, col2 = st.columns(2)
 with col1:
